@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../app'); // Correctly import your Express app
+const app = require('../models/user');
 const jwt = require('jsonwebtoken');
 
 describe("POST /auth/register", function () {
