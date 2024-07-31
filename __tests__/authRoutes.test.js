@@ -1,79 +1,61 @@
-// const request = require("supertest");
-// const jwt = require("jsonwebtoken");
+const request = require('supertest');
+const app = require('../app'); // Correctly import your Express app
+const jwt = require('jsonwebtoken');
 
-// const app = require("../app");
-// const db = require("../db");
-// const User = require("../models/user");
+describe("POST /auth/register", function () {
+  test("can register", async function () {
+    let response = await request(app)
+      .post("/register") // Ensure this matches your route definition
+      .send({
+        username: "test1",
+        password: "secret",
+        first_name: "Test1",
+        last_name: "Testy1",
+        phone: "+14150000000",
+      });
 
+    let token = response.body.token;
+    expect(token).toBeDefined();
 
-// describe("Auth Routes Test", function () {
+    let decoded = jwt.decode(token);
+    expect(decoded).toEqual(
+      expect.objectContaining({
+        username: "test1",
+        iat: expect.any(Number),
+      })
+    );
+  }, 20000); // Increase timeout to 20 seconds
+});
 
-//   beforeEach(async function () {
-//     await db.query("DELETE FROM messages");
-//     await db.query("DELETE FROM users");
+describe("POST /auth/login", function () {
+  test("can login", async function () {
+    let response = await request(app)
+      .post("/login") // Ensure this matches your route definition
+      .send({ username: "test1", password: "secret" });
 
-//     let u1 = await User.register({
-//       username: "test1",
-//       password: "password",
-//       first_name: "Test1",
-//       last_name: "Testy1",
-//       phone: "+14155550000",
-//     });
-//   });
+    let token = response.body.token;
+    expect(token).toBeDefined();
 
-//   /** POST /auth/register => token  */
+    let decoded = jwt.decode(token);
+    expect(decoded).toEqual(
+      expect.objectContaining({
+        username: "test1",
+        iat: expect.any(Number),
+      })
+    );
+  }, 20000); // Increase timeout to 20 seconds
 
-//   describe("POST /auth/register", function () {
-//     test("can register", async function () {
-//       let response = await request(app)
-//         .post("/auth/register")
-//         .send({
-//           username: "bob",
-//           password: "secret",
-//           first_name: "Bob",
-//           last_name: "Smith",
-//           phone: "+14150000000"
-//         });
+  test("won't login with wrong password", async function () {
+    let response = await request(app)
+      .post("/login")
+      .send({ username: "test1", password: "WRONG" });
+    expect(response.statusCode).toEqual(400);
+  }, 20000); // Increase timeout to 20 seconds
 
-//       let token = response.body.token;
-//       expect(jwt.decode(token)).toEqual({
-//         username: "bob",
-//         iat: expect.any(Number)
-//       });
-//     });
-//   });
-
-//   /** POST /auth/login => token  */
-
-//   describe("POST /auth/login", function () {
-//     test("can login", async function () {
-//       let response = await request(app)
-//         .post("/auth/login")
-//         .send({ username: "test1", password: "password" });
-
-//       let token = response.body.token;
-//       expect(jwt.decode(token)).toEqual({
-//         username: "test1",
-//         iat: expect.any(Number)
-//       });
-//     });
-
-//     test("won't login w/wrong password", async function () {
-//       let response = await request(app)
-//         .post("/auth/login")
-//         .send({ username: "test1", password: "WRONG" });
-//       expect(response.statusCode).toEqual(400);
-//     });
-
-//     test("won't login w/wrong password", async function () {
-//       let response = await request(app)
-//         .post("/auth/login")
-//         .send({ username: "not-user", password: "password" });
-//       expect(response.statusCode).toEqual(400);
-//     });
-//   });
-// });
-
-// afterAll(async function () {
-//   await db.end();
-// });
+  test("won't login with non-existent user", async function () {
+    let response = await request(app)
+      .post("/login")
+      .send({ username: "not-user", password: "password" });
+    expect(response.statusCode).toEqual(400);
+  }, 20000); // Increase timeout to 20 seconds
+});

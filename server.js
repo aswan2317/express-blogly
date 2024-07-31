@@ -1,9 +1,9 @@
-/** Server startup for Message.ly. */
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
 
+// Middleware and routes go here
 
-const app = require("./app");
-
-
-app.listen(3000, function () {
-  console.log("Listening on 3000");
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
